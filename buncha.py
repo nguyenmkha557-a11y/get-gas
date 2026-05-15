@@ -94,8 +94,14 @@ def update_cloudflare_kv(new_link, match_name):
 
 if __name__ == "__main__":
     print("🚀 Bắt đầu test script...")
-    # Chạy hàm lấy nội dung từ worker
-    content = def update_cloudflare_kv(new_link, match_name):()
     
-    # Gửi thử một thông báo test về Telegram của bạn để kiểm tra xem Token/Chat ID đúng chưa
-    #send_telegram("🔔 Hệ thống test GitHub Actions: Đã kích hoạt script thành công!")
+    # 1. Lấy dữ liệu do bạn nhập từ giao diện GitHub truyền xuống
+    url_tran_dau = os.getenv('MATCH_URL')
+    ten_tran_dau = os.getenv('MATCH_NAME')
+    
+    # Kiểm tra xem người dùng có nhập thiếu dữ liệu không
+    if not url_tran_dau or not ten_tran_dau:
+        print("❌ Lỗi: Thiếu dữ liệu MATCH_URL hoặc MATCH_NAME từ GitHub Actions!")
+    else:
+        # 2. GỌI HÀM chạy (Tuyệt đối không viết chữ "def" ở đây nữa)
+        update_cloudflare_kv(url_tran_dau, ten_tran_dau)
