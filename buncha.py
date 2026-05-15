@@ -38,10 +38,64 @@ def get_current_worker_content():
     print("ℹ️ Sử dụng chuỗi M3U mặc định.")
     return '#EXTM3U url-tvg="https://vnepg.site/epg.xml"'
 
+def update_cloudflare_kv(new_link, match_name):
+    """Cập nhật nội dung M3U mới trực tiếp vào Cloudflare KV Storage"""
+    clean_link = new_link.replace('\\', '').replace('"', '').replace("'", "").strip()
+    
+    # Đọc các biến cấu hình KV từ môi trường (Đã thay tên biến cho đúng bản chất)
+    cf_account_id = os.getenv('CF_ACCOUNT_ID')
+    cf_kv_namespace_id = os.getenv('CF_KV_NAMESPACE_ID')
+    cf_api_token = os.getenv('CF_API_TOKEN')
+    
+    # Tên của key lưu trữ file m3u trong KV (ví dụ: 'm3u_content')
+    kv_key_name = 'm3u_content' 
+
+    # 1. Lấy dữ liệu M3U cũ đang có từ KV (Sử dụng hàm get_current_worker_content đã sửa ở câu trước)
+    current_content = get_current_worker_content()
+    
+    # Định nghĩa các dòng option cấu hình VLC / IPTV Player
+    vlc_options = (
+        '#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36\n'
+        '#EXTVLCOPT:http-referrer=https://bunchatv4.net/\n'
+        '#EXTVLCOPT:http-origin=https://bunchatv4.net'
+    )
+    
+    # Tạo entry trận đấu mới
+    new_entry = f'\n#EXTINF:-1 group-title="LIVE" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/1/1a/Canal%2B_Sport_2015.png", {match_name}\n{vlc_options}\n{clean_link}'
+    
+    # Cộng dồn nội dung cũ và entry mới
+    updated_m3u = current_content + new_entry
+
+    # 2. Đường dẫn API chính thức của Cloudflare để ghi đè (PUT) giá trị của một KEY trong KV
+    url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account_id}/storage/kv/namespaces/{cf_kv_namespace_id}/values/{kv_key_name}"
+    
+    # Headers xác thực API Token
+    headers = {
+        "Authorization": f"Bearer {cf_api_token}",
+        "Content-Type": "text/plain" # Gửi dữ liệu dạng văn bản thô (M3U) lên KV
+    }
+
+    try:
+        # 3. Gửi PUT request để đẩy trực tiếp chuỗi M3U lên Cloudflare KV
+        res = requests.put(url, headers=headers, data=updated_m3u.encode('utf-8'), timeout=15)
+        
+        # Cloudflare API thành công khi trả về kết quả có "success": true trong JSON
+        if res.status_code == 200 and res.json().get("success") == True:
+            print(f"✅ Đã cập nhật thành công trận {match_name} vào Cloudflare KV!")
+            send_telegram(f"✅ Cloudflare KV Updated!\n⚽ {match_name}\n🔗 {clean_link}")
+        else:
+            error_msg = res.json().get("errors", [{}])[0].get("message", "Lỗi không xác định")
+            print(f"❌ Lỗi API Cloudflare: {res.status_code} - {error_msg}")
+            send_telegram(f"❌ Lỗi Cloudflare KV: {res.status_code}\n{error_msg[:100]}")
+            
+    except Exception as e:
+        print(f"❌ Lỗi kết nối khi update KV: {e}")
+        send_telegram(f"❌ Lỗi kết nối cập nhật KV: {str(e)[:100]}")
+
 if __name__ == "__main__":
     print("🚀 Bắt đầu test script...")
     # Chạy hàm lấy nội dung từ worker
-    content = get_current_worker_content()
+    content = update_cloudflare_kv()
     
     # Gửi thử một thông báo test về Telegram của bạn để kiểm tra xem Token/Chat ID đúng chưa
     #send_telegram("🔔 Hệ thống test GitHub Actions: Đã kích hoạt script thành công!")
