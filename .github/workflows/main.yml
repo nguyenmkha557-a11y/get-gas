@@ -27,7 +27,11 @@ jobs:
           GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
           GIST_ID: ${{ secrets.GIST_ID }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
-          TG_CHAT_ID: ${{ github.event.inputs.chat_id }} # Dùng ID động này để gửi tin nhắn
+          TG_CHAT_ID: ${{ github.event.inputs.chat_id }}
           MATCH_URL: ${{ github.event.inputs.match_url }}
-          MATCH_NAME: ${{ github.event.inputs.match_name }} # Thêm dòng này
+          MATCH_NAME: ${{ github.event.inputs.match_name }}
+          # BẮT BUỘC PHẢI THÊM 3 DÒNG NÀY ĐỂ LIÊN KẾT VỚI KV:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: python buncha.py
