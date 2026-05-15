@@ -1,0 +1,33 @@
+name: Get Link From Telegram Input
+on:
+  workflow_dispatch:
+    inputs:
+      match_url:
+        description: 'Dán link trận đấu'
+        required: true
+      match_name:
+        description: 'Nhập tên trận đấu (Ví dụ: MU vs Barca)'
+        required: true
+        default: 'Link'
+      chat_id: # Thêm ô này
+        description: 'ID Telegram của người gửi'
+        required: true
+
+jobs:
+  check_link:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install requests yt-dlp
+      - name: Run script
+        env:
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          GIST_ID: ${{ secrets.GIST_ID }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ github.event.inputs.chat_id }} # Dùng ID động này để gửi tin nhắn
+          MATCH_URL: ${{ github.event.inputs.match_url }}
+          MATCH_NAME: ${{ github.event.inputs.match_name }} # Thêm dòng này
+        run: python script.py
