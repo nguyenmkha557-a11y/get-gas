@@ -48,7 +48,7 @@ def update_cloudflare_kv(new_link, match_name):
     cf_api_token = os.getenv('CF_API_TOKEN')
     
     # Tên của key lưu trữ file m3u trong KV (ví dụ: 'm3u_content')
-    kv_key_name = 'm3u_content' 
+    kv_key_name = 'playlist' 
 
     # 1. Lấy dữ liệu M3U cũ đang có từ KV (Sử dụng hàm get_current_worker_content đã sửa ở câu trước)
     current_content = get_current_worker_content()
