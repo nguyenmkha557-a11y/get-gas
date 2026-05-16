@@ -63,8 +63,23 @@ def update_cloudflare_kv(new_link, match_name):
     # Tạo entry trận đấu mới
     new_entry = f'\n#EXTINF:-1 group-title="LIVE" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/1/1a/Canal%2B_Sport_2015.png", {match_name}\n{vlc_options}\n{clean_link}'
     
-    # Cộng dồn nội dung cũ và entry mới
-    updated_m3u = current_content + new_entry
+        # XỬ LÝ ĐẨY LÊN ĐẦU:
+        # Nếu file cũ đã có nội dung và bắt đầu bằng #EXTM3U
+        if current_content.startswith("#EXTM3U"):
+            # Tách dòng đầu tiên (#EXTM3U...) ra khỏi phần danh sách kênh cũ
+            lines = current_content.split('\n', 1)
+            header = lines[0] # Đây là dòng '#EXTM3U url-tvg="..."'
+            
+            if len(lines) > 1:
+                old_channels = lines[1] # Toàn bộ các trận đấu cũ trước đây
+                # Nối theo thứ tự: Dòng đầu -> Trận mới -> Các trận cũ
+                playlist = f"{header}\n{new_entry}\n{old_channels}"
+            else:
+                # Nếu file cũ mới chỉ có mỗi dòng header chưa có kênh nào
+                playlist = f"{header}\n{new_entry}"
+        else:
+            # Trường hợp khẩn cấp nếu file cũ bị lỗi không có header #EXTM3U
+            playlist = f'#EXTM3U url-tvg="https://vnepg.site/epg.xml"\n{new_entry}\n{current_content}'
 
     # 2. Đường dẫn API chính thức của Cloudflare để ghi đè (PUT) giá trị của một KEY trong KV
     url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account_id}/storage/kv/namespaces/{cf_kv_namespace_id}/values/{kv_key_name}"
