@@ -56,35 +56,35 @@ def update_cloudflare_kv(new_link, match_name):
     # Tách thành từng dòng, loại bỏ khoảng trắng thừa ở đầu/cuối mỗi dòng và lọc bỏ dòng trống hoàn toàn
     lines = [line.strip() for line in raw_content.split('\n') if line.strip()]
     
-    # Định nghĩa các dòng cấu hình IPTV
+  # Định nghĩa các dòng cấu hình IPTV (Loại bỏ \n ở dòng cuối cùng)
     vlc_options = (
         '#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36\n'
+        '#EXTVLCOPT:http-referrer=https://bunchatv4.net/\n'
+        '#EXTVLCOPT:http-origin=https://bunchatv4.net'  # Dòng cuối không để \n ở đây nữa
     )
     
-    # Tạo cụm text cho trận đấu mới
+    # Tạo cụm text hoàn chỉnh cho trận đấu mới (Nối mạch thẳng xuống clean_link)
     new_entry = f'#EXTINF:-1 group-title="LIVE" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/1/1a/Canal%2B_Sport_2015.png", {match_name}\n{vlc_options}\n{clean_link}'
     
     # XỬ LÝ CHÈN LÊN ĐẦU KHÔNG DÒNG TRỐNG:
     if lines and lines[0].startswith("#EXTM3U"):
-        header = lines[0] # Dòng đầu tiên cố định: #EXTM3U url-tvg="..."
+        header = lines[0]  # Dòng đầu tiên cố định: #EXTM3U url-tvg="..."
         
         if len(lines) > 1:
-            # Gộp lại các dòng kênh cũ (từ dòng thứ 2 trở đi), nối nhau bằng đúng 1 dấu xuống dòng
+            # Gộp lại các dòng kênh cũ, nối nhau bằng đúng 1 dấu xuống dòng \n
             old_channels = "\n".join(lines[1:])
-            # Nối trực tiếp: Header -> Xuống dòng -> Trận mới -> Xuống dòng -> Kênh cũ
+            # Ghép mạch liên tục: Header -> Trận mới -> Kênh cũ
             playlist = f"{header}\n{new_entry}\n{old_channels}"
         else:
-            # Nếu danh sách cũ chưa có kênh nào ngoài dòng header
             playlist = f"{header}\n{new_entry}"
     else:
-        # Trường hợp khẩn cấp nếu dữ liệu cũ trống rỗng hoặc mất header
         default_header = '#EXTM3U url-tvg="https://vnepg.site/epg.xml"'
         if lines:
             old_channels = "\n".join(lines)
             playlist = f"{default_header}\n{new_entry}\n{old_channels}"
         else:
             playlist = f"{default_header}\n{new_entry}"
-
+            
     # 2. Đường dẫn API chính thức của Cloudflare để ghi đè (PUT) giá trị của một KEY trong KV
     url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account_id}/storage/kv/namespaces/{cf_kv_namespace_id}/values/{kv_key_name}"
     
