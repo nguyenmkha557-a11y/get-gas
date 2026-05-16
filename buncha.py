@@ -65,7 +65,7 @@ def update_cloudflare_kv(new_link, match_name):
     
         # XỬ LÝ ĐẨY LÊN ĐẦU:
         # Nếu file cũ đã có nội dung và bắt đầu bằng #EXTM3U
-   if current_content.startswith("#EXTM3U"):
+    if current_content.startswith("#EXTM3U"):
         # Bên trong IF thì thụt vào ĐÚNG 8 dấu cách:
         lines = current_content.split('\n', 1)
         header = lines[0]
