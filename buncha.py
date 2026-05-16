@@ -91,7 +91,7 @@ def update_cloudflare_kv(new_link, match_name):
 
     try:
         # 3. Gửi PUT request để đẩy trực tiếp chuỗi M3U lên Cloudflare KV
-        res = requests.put(url, headers=headers, data=updated_m3u.encode('utf-8'), timeout=15)
+        res = requests.put(url, headers=headers, data=playlist.encode('utf-8'), timeout=15)
         
         # Cloudflare API thành công khi trả về kết quả có "success": true trong JSON
         if res.status_code == 200 and res.json().get("success") == True:
