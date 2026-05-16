@@ -73,12 +73,12 @@ def update_cloudflare_kv(new_link, match_name):
         if len(lines) > 1:
             # Bên trong IF nhỏ này thụt vào ĐÚNG 12 dấu cách:
             old_channels = lines[1]
-            updated_m3u = f"{header}\n{new_entry}\n{old_channels}"
+            playlist = f"{header}\n{new_entry}\n{old_channels}"
         else:
-            updated_m3u = f"{header}\n{new_entry}"
+            playlist = f"{header}\n{new_entry}"
     else:
         # Khối ELSE này thụt đúng 4 dấu cách, bên trong thụt 8 dấu cách:
-        updated_m3u = f'#EXTM3U url-tvg="https://vnepg.site/epg.xml"\n{new_entry}\n{current_content}'
+        playlist = f'#EXTM3U url-tvg="https://vnepg.site/epg.xml"\n{new_entry}\n{current_content}'
 
     # 2. Đường dẫn API chính thức của Cloudflare để ghi đè (PUT) giá trị của một KEY trong KV
     url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account_id}/storage/kv/namespaces/{cf_kv_namespace_id}/values/{kv_key_name}"
